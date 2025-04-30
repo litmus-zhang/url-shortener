@@ -1,32 +1,39 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, NotFoundException, Res } from '@nestjs/common';
 import { UrlService } from './url.service';
-import { CreateUrlDto } from './dto/create-url.dto';
-import { UpdateUrlDto } from './dto/update-url.dto';
+import { CreateUrlDto, shortUrlDto } from './dto/create-url.dto';
+import { Response } from 'express';
 
-@Controller('api')
+@Controller('')
 export class UrlController {
   constructor(private readonly urlService: UrlService) {}
 
-  @Post("encode")
+  @Post("/api/encode")
   encode(@Body() createUrlDto: CreateUrlDto) {
-    return this.urlService.create(createUrlDto);
+    return this.urlService.encode(createUrlDto);
   }
-  @Post("decode")
-  decode(@Body() createUrlDto: CreateUrlDto) {
-    return this.urlService.create(createUrlDto);
+  @HttpCode(HttpStatus.OK)
+  @Post("/api/decode")
+  decode(@Body() createUrlDto: shortUrlDto) {
+    return this.urlService.decode(createUrlDto);
   }
 
-  @Get("list")
+  @Get("/api/list")
   findAll() {
     return this.urlService.findAll();
   }
 
-  @Get('/statistic/:url_path')
-  findOne(@Param('id') id: string) {
-    return this.urlService.findOne(+id);
+  @Get('/api/statistic/:url_path')
+  findOne(@Param('url_path') url: string) {
+    return this.urlService.statistic(url);
   }
+
+  @HttpCode(HttpStatus.TEMPORARY_REDIRECT)
   @Get('/:url_path')
-  redirect(@Param('id') id: string) {
-    return this.urlService.findOne(+id);
+  async redirect(@Param('url_path') url: string, @Res() res: Response) {
+    const result = await this.urlService.findOne(url);
+    if (!result || !result.data) {
+      throw new NotFoundException('URL not found');
+    }
+    return res.redirect(result.data);
   }
 }

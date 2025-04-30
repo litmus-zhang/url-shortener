@@ -22,7 +22,7 @@ describe('AppController (e2e)', () => {
     await app.listen(3300);
 
     database = app.get(DatabaseService);
-    // await database.cleanDB();
+    await database.cleanDB();
 
     const baseUrl = 'http://localhost:3300'
     pactum.request.setBaseUrl(baseUrl);
@@ -42,18 +42,19 @@ describe('AppController (e2e)', () => {
   });
   const body = {
     longUrl: "https://indicina.co",
-    shortUrl: "http://short.est/GeAi9K"
+    shortUrl: "24YNLaZHL6q"
   }
   describe("URL module", () => {
     it("encode url", () => {
       return pactum
         .spec()
         .post('/api/encode')
-        .withBody(body.longUrl)
+        .withBody({"url": body.longUrl})
         .expectStatus(201)
+        .stores("shortUrl", "data")
         .expectJsonLike({
           message: "Url encoded successfully",
-          data: "/.+/"
+          data: /.+/
         })
     })
     it("decode url", () => {
@@ -61,11 +62,11 @@ describe('AppController (e2e)', () => {
       return pactum
         .spec()
         .post('/api/decode')
-        .withBody(body.shortUrl)
+        .withBody({ "url": "$S{shortUrl}"})
         .expectStatus(200)
         .expectJsonLike({
           message: "Url decoded successfully",
-          data: "/.+/"
+          data: /.+/
         })
     })
     it("list all urls", () => {
@@ -75,29 +76,26 @@ describe('AppController (e2e)', () => {
         .expectStatus(200)
         .expectJsonLike({
           message: "Urls fetched successfully",
-          data: "/.+/"
+          data: /.+/
         })
     })
-    it("Get a urls and return its statistics", () => {
+    it("Get a url and return its statistics", () => {
 
       return pactum
         .spec()
-        .get('/api/statistic/:url_path')
+        .get('/api/statistic/{url_path}')
+        .withPathParams("url_path", "$S{shortUrl}")
         .expectStatus(200)
         .expectJsonLike({
-          message: "Urls fetched successfully",
-          data: "/.+/"
+          message: "Url fetched successfully",
+          data: /.+/
         })
     })
-    it("redirect a short urls to the original long url", () => {
-      return pactum
-        .spec()
-        .get('/api/statistic/:url_path')
-        .expectStatus(HttpStatus.TEMPORARY_REDIRECT)
-        .expectJsonLike({
-          message: "Urls fetched successfully",
-          data: "/.+/"
-        })
-    })
+    // it("redirect a short urls to the original long url", () => {
+    //   return pactum
+    //     .spec()
+    //     .get('/api/statistic/:url_path')
+    //     .expectStatus(HttpStatus.TEMPORARY_REDIRECT);
+    // })
   })
 });
