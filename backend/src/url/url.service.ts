@@ -5,7 +5,7 @@ import { DatabaseService } from '../database/database.service';
 
 @Injectable()
 export class UrlService {
-  constructor( private database: DatabaseService) {}
+  constructor(private database: DatabaseService) { }
   generateShortUrl(): string {
     const random = Math.floor(Math.random() * 1000000);
     const uniqueNumber = Date.now() * 1000000 + random;
@@ -22,7 +22,7 @@ export class UrlService {
     }
     return encoded || '0';
   }
- async encode(createUrlDto: CreateUrlDto) {
+  async encode(createUrlDto: CreateUrlDto) {
 
     // check if url is in the database
     // if it is, return the short url
@@ -36,7 +36,7 @@ export class UrlService {
     });
 
     if (url) {
-      return  {
+      return {
         message: 'Url encoded successfully',
         data: url.shortUrl,
       };
@@ -74,20 +74,32 @@ export class UrlService {
     return new BadRequestException('Url not found');
   }
 
-  async findAll() {
-    const data = await this.database.url.findMany({
-      select: {
-        longUrl: true,
-        shortUrl: true,
-        createdAt: true,
-        updatedAt: true,
-        NumberOfVisits: true,
-      },
-    });
+  async findAll(page: number, limit: number) {
+    const skip = (page - 1) * limit;
+    const [data, totalCount] = await Promise.all([
+      this.database.url.findMany({
+        skip,
+        take: limit,
+        select: {
+          longUrl: true,
+          shortUrl: true,
+          createdAt: true,
+          updatedAt: true,
+          NumberOfVisits: true,
+        },
+      }),
+      this.database.url.count(),
+    ]);
+
     return {
       message: 'Urls fetched successfully',
       data,
-    }
+      meta: {
+        totalCount,
+        currentPage: page,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+    };
   }
 
   async findOne(url: string) {
@@ -101,11 +113,11 @@ export class UrlService {
         where: {
           id: urlData.id,
         },
-         // increment the number of visits
-         // by 1
-         // and return the url data
-         // with the number of visits
-         // incremented by 1
+        // increment the number of visits
+        // by 1
+        // and return the url data
+        // with the number of visits
+        // incremented by 1
         data: {
           NumberOfVisits: {
             increment: 1,
@@ -115,10 +127,10 @@ export class UrlService {
           longUrl: true,
         }
       });
-    return {
-      message: 'Url fetched successfully',
-      data: urlData.longUrl,
-    };
+      return {
+        message: 'Url fetched successfully',
+        data: urlData.longUrl,
+      };
     }
   }
   async statistic(url: string) {

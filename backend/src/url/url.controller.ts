@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, NotFoundException, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, NotFoundException, Res, Query } from '@nestjs/common';
 import { UrlService } from './url.service';
 import { CreateUrlDto, shortUrlDto } from './dto/create-url.dto';
 import { Response } from 'express';
@@ -18,8 +18,8 @@ export class UrlController {
   }
 
   @Get("/api/list")
-  findAll() {
-    return this.urlService.findAll();
+  findAll(@Query('page') page: string = "1", @Query('limit') limit: string = "10") {
+    return this.urlService.findAll(parseInt(page), parseInt(limit));
   }
 
   @Get('/api/statistic/:url_path')
