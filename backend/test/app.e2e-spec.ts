@@ -4,9 +4,12 @@ import * as request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 import * as pactum from "pactum"
+import { DatabaseService } from '../src/database/database.service';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
+  let database: DatabaseService;
+
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -17,6 +20,10 @@ describe('AppController (e2e)', () => {
     app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
     await app.init();
     await app.listen(3300);
+
+    database = app.get(DatabaseService);
+    // await database.cleanDB();
+
     const baseUrl = 'http://localhost:3300'
     pactum.request.setBaseUrl(baseUrl);
   });
@@ -44,7 +51,7 @@ describe('AppController (e2e)', () => {
         .post('/api/encode')
         .withBody(body.longUrl)
         .expectStatus(201)
-        .expectJson({
+        .expectJsonLike({
           message: "Url encoded successfully",
           data: "/.+/"
         })
@@ -56,7 +63,7 @@ describe('AppController (e2e)', () => {
         .post('/api/decode')
         .withBody(body.shortUrl)
         .expectStatus(200)
-        .expectJson({
+        .expectJsonLike({
           message: "Url decoded successfully",
           data: "/.+/"
         })
@@ -66,7 +73,7 @@ describe('AppController (e2e)', () => {
         .spec()
         .get('/api/list')
         .expectStatus(200)
-        .expectJson({
+        .expectJsonLike({
           message: "Urls fetched successfully",
           data: "/.+/"
         })
@@ -77,7 +84,7 @@ describe('AppController (e2e)', () => {
         .spec()
         .get('/api/statistic/:url_path')
         .expectStatus(200)
-        .expectJson({
+        .expectJsonLike({
           message: "Urls fetched successfully",
           data: "/.+/"
         })
@@ -87,7 +94,7 @@ describe('AppController (e2e)', () => {
         .spec()
         .get('/api/statistic/:url_path')
         .expectStatus(HttpStatus.TEMPORARY_REDIRECT)
-        .expectJson({
+        .expectJsonLike({
           message: "Urls fetched successfully",
           data: "/.+/"
         })
