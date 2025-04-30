@@ -11,14 +11,14 @@ To run the full application follow the instruction below
 
 --> Backend
 - Open a terminal and cd into the backend folder, `cd backend`
-- Then run `npm run start:dev`
+- Then run `npm i && npm run start:dev`
 
 
 
 
 --> Frontend
 - Open a terminal and cd into the backend folder, `cd frontend`
-- Then run `npm run dev`
+- Then run `npm i && npm run dev`
 
 
 
