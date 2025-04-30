@@ -1,4 +1,6 @@
 import type { MetaFunction } from '@remix-run/node';
+import { Link } from '@remix-run/react';
+
 
 export const meta: MetaFunction = () => {
     return [
@@ -9,6 +11,8 @@ export const meta: MetaFunction = () => {
 export default function Listing() {
     return (
         <div className="flex  flex-col  gap-3 h-screen items-center justify-center">
+            <div className="flex gap-2 items-end">
+
             <label htmlFor="Search">
                 <span className="text-sm font-medium text-gray-700"> Search </span>
 
@@ -43,6 +47,10 @@ export default function Listing() {
                     </span>
                 </div>
             </label>
+            <Link to={"/"} className='bg-blue-500 px-4 py-2 rounded hover:bg-blue-300'> Create New </Link>
+
+            </div>
+
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y-2 divide-gray-200 dark:divide-gray-700">
                     <thead className="ltr:text-left rtl:text-right">
